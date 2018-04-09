@@ -1,6 +1,17 @@
+/RUNNING_PID
+/logs/
+/project/*-shim.sbt
+/project/project/
+/project/target/
+/target/
+/.idea/
+
+
+# -------------------------
+
 # WINDOWS
 
-# Windows thumbnail cache files
+# Windows thumbnail junk.cache files
 Thumbs.db
 ehthumbs.db
 ehthumbs_vista.db
@@ -62,7 +73,7 @@ src_managed/
 project/boot/
 project/plugins/project/
 .history
-.cache
+.junk.cache
 .lib/
 
 # PLAY FRAMEWORK
@@ -82,7 +93,7 @@ test-result
 server.pid
 *.eml
 /dist/
-.cache
+.junk.cache
 
 
 # IDEs

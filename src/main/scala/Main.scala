@@ -1,25 +1,29 @@
-import scala.io.StdIn
-import scala.util._
+import actors._
+import examples.cache._
 
 object Main {
+
+
 
   def main(args: Array[String]): Unit = {
 
     // commandLineService.parse(args) match {
-      // case Some(CommandLineConfig(paths, recursive)) => doWork(paths, recursive)
-      // case None => System.exit(1) // Bad arguments. Error message has been displayed
+    // case Some(CommandLineConfig(arg1, arg2)) => doWork(...)
+    // case None => System.exit(1) // Bad arguments. Error message has been displayed
     // }
-	
-	doWork()
+
+    // OR
+
+    doWork()
   }
 
 
   private def doWork(): Unit = {
 
-    // logger.info("Starting actor system. Use CTRL+C to exit.")
-    // actorService.run()
+    CacheClient.run()
 
     println(">>> Press ENTER to exit <<<")
+    import scala.io.StdIn
     StdIn.readLine()
   }
 }

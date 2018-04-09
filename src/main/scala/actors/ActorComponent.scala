@@ -1,4 +1,4 @@
-package deduplicator.actors
+package actors
 
 // TO READ:
 // https://developer.lightbend.com/guides/akka-distributed-workers-scala/back-end.html
@@ -6,11 +6,11 @@ package deduplicator.actors
 
 import akka.actor.ActorSystem
 
-
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-trait ActorComponent {  
+
+trait ActorComponent {
 
   val actorService: ActorService
 
@@ -18,37 +18,33 @@ trait ActorComponent {
 
     // Loan pattern for actor system
     private def using[A](f: ActorSystem => A): A = {
+      println("Starting actor system.")
       val system: ActorSystem = ActorSystem("mainActorSystem")
       try {
-
         // do something with it
         f(system)
       } finally {
+        println("Stopping actor system.")
         system.terminate()
+        // system.shutdown()
+        // system.awaitTermination()
         Await.ready(system.whenTerminated, Duration(15, SECONDS)) // blocking
       }
     }
   }
 
-  class ActorService {
+
+  abstract class ActorService {
 
     import ActorService._
 
-    // TODO
-    def run(): Unit = using(system => {
-      //val supervisor = system.actorOf(Supervisor.props(), "supervisor")
-      //supervisor ! FindDuplicates()
+    def run(): Unit
 
-      //      import deduplicator.io._
-      //      import FileSystemWatchActor._
-      //      import java.nio.file._
-      //      val watch = system.actorOf(FileSystemWatchActor.props(null), "fileSystemWatch")
-      //      watch ! Register(Paths.get(raw"src\test\resources\testfilesystem"), recurse = false)
-
-      //      println(">>> Press ENTER to exit <<<")
-      //      scala.io.StdIn.readLine()
-
-    })
+    // Implement like:
+    // def run(): Unit = using(actorSystem =>
+    //    val cache = system.actorOf(Cache.props(), "cacheActor")
+    //
+    // )
   }
 
 }
