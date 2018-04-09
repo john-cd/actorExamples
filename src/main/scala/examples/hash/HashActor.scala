@@ -1,6 +1,6 @@
 package examples.hash
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated, Timers}
+import akka.actor.{Actor, ActorLogging, Props}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._

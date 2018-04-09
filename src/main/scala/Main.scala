@@ -1,8 +1,6 @@
-import actors._
 import examples.cache._
 
 object Main {
-
 
 
   def main(args: Array[String]): Unit = {
@@ -22,8 +20,5 @@ object Main {
 
     CacheClient.run()
 
-    println(">>> Press ENTER to exit <<<")
-    import scala.io.StdIn
-    StdIn.readLine()
   }
 }

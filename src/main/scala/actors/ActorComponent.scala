@@ -14,6 +14,7 @@ trait ActorComponent {
 
   val actorService: ActorService
 
+  //noinspection ScalaUnusedSymbol
   object ActorService {
 
     // Loan pattern for actor system
@@ -35,8 +36,6 @@ trait ActorComponent {
 
 
   abstract class ActorService {
-
-    import ActorService._
 
     def run(): Unit
 

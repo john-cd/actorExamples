@@ -1,18 +1,15 @@
 package examples.cache
 
-import java.security.MessageDigest
-import java.util.Base64
 import java.util.concurrent.atomic.AtomicLong
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated, Timers}
+import actors._
+import akka.actor.{ActorRef, Props, Terminated, Timers}
 
 import scala.concurrent.duration._
-import actors._
 
+object Cache {
 
-object Cache extends Cache[Nothing, Nothing] {
-
-  def props[K, V](cacheId: Int): Props = Props(new Cache[K, V](cacheId))
+  def props[K, V](cacheId: Int): Props = Props(classOf[Cache[K, V]], cacheId)
 
   // Timer
   private case object TickKey
@@ -22,7 +19,7 @@ object Cache extends Cache[Nothing, Nothing] {
   // Messages
   sealed trait Message[+K, +V]
 
-  case class Add[K, V](requestId: Long, key: K, value: V) extends Message[K,V]
+  case class Add[K, V](requestId: Long, key: K, value: V) extends Message[K, V]
 
   case class Added(requestId: Long) extends Message[Nothing, Nothing]
 
@@ -30,11 +27,11 @@ object Cache extends Cache[Nothing, Nothing] {
 
   case class Got[V](requestId: Long, value: Option[V]) extends Message[Nothing, V]
 
-  def getRequestId(): Long = {
+  def getRequestId: Long = {
     requestIdCounter.getAndIncrement()
   }
 
-  private val requestIdCounter: AtomicLong = new AtomicLong(0L)
+  private lazy val requestIdCounter: AtomicLong = new AtomicLong(0L)
 
 }
 
@@ -45,15 +42,15 @@ class Cache[K, V](cacheId: Int) extends Supervisor with Timers {
   def this() = this(-1)
 
   // the nodes that the Cache knows about
-  private final val nodes: Array[Option[ActorRef]] = Array.fill(256) {
+  private final val nodes: Array[Option[ActorRef]] = Array.fill(10) {
     None
   }
 
-  // start timer to decrement TTL
-  timers.startPeriodicTimer(TickKey, Tick, 1.second)
 
   override def preStart(): Unit = {
     super.preStart()
+    // start timer to decrement TTL
+    timers.startPeriodicTimer(TickKey, Tick, 1.second)
     log.info(s"Cache $cacheId started")
   }
 
@@ -62,7 +59,7 @@ class Cache[K, V](cacheId: Int) extends Supervisor with Timers {
     log.info(s"Cache $cacheId stopped")
   }
 
-  private def decrementTTL() = for {Some(node) <- nodes} node ! DecrementTTL
+  private def decrementTTL(): Unit = for {Some(node) <- nodes} node ! StorageNode.DecrementTTL
 
 
   override def receive: Receive = {
@@ -71,34 +68,41 @@ class Cache[K, V](cacheId: Int) extends Supervisor with Timers {
 
     case Terminated(child) =>
       log.warning(s"$child died")
+      nodes.update(nodes.indexOf(Some(child)), None)
+      log.debug(nodes.mkString("<", " , ", ">"))
 
     case Add(requestId, key, value) =>
       log.info(s"Request $requestId received on cache $cacheId from ${sender()} - Add $key -> $value")
       //val hash = MessageDigest.getInstance("MD5").digest(key.asInstanceOf[Array[Byte]]) // MD5 is 128 bits
       //log.info(s"md5: ${Base64.getEncoder.encodeToString(hash) } ")
-      val index = key.## % nodes.length
+      val index = math.abs(key.##) % nodes.length
       val nodeOpt = nodes(index)
       nodeOpt match {
         case Some(node) =>
-          node ! SN_Add(self, requestId, key, value)
+          node ! StorageNode.SN_Add(self, requestId, key, value)
         case None =>
-          val newActor = context.actorOf(StorageNode.props(index))
+          val newActor = context.actorOf(StorageNode.props(index), s"StorageNode$index")
+          context watch newActor
           nodes(index) = Some(newActor)
-          newActor ! SN_Add(self, requestId, key, value)
+          newActor ! StorageNode.SN_Add(self, requestId, key, value)
       }
       sender() ! Added(requestId)
 
     case Get(requestId, key) =>
-      log.info(s"Request $requestId received from ${sender()} - Get $key")
+      log.info(s"Request $requestId received on cache $cacheId from ${sender()} - Get $key")
       val client = sender()
-      val node = nodes(key.## % nodes.length)
-      node match {
+      val index = math.abs(key.##) % nodes.length
+      nodes(index) match {
         case Some(storageNode) =>
-          storageNode ! SN_Get(self, requestId, key)
-        case None => client ! Got(requestId, None)
+          log.info(s"Found storageNode $index for key $key")
+          storageNode ! StorageNode.SN_Get(self, requestId, key) // TODO: still a small possibility that storageNode is dead but we haven't received the Terminated message
+        case None =>
+          log.info(s"Replying to client - requestId: $requestId - Got None")
+          client ! Got(requestId, None)
       }
 
-    case SN_Got(client, requestId, value) =>
+    case StorageNode.SN_Got(client, requestId, value) =>
+      log.info(s"Replying to client - requestId $requestId - Got $value")
       client ! Got(requestId, value)
   }
 }

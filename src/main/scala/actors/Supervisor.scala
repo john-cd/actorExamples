@@ -1,6 +1,6 @@
 package actors
 
-import akka.actor.{Actor, ActorLogging, Props, Terminated}
+import akka.actor.Props
 
 object Supervisor {
   def props(): Props = Props[Supervisor]
@@ -19,12 +19,14 @@ class Supervisor extends BaseActor {
     context.watch(child)
   }
 
-//  override def receive: Receive = {
-//    case Terminated(child) => {
-//      log.info("Child $child killed")
-//    }
-//    case _ => println("Parent received an unknown message")
-//  }
+  //// Don't forget to receive Terminated messages:
+  //  override def receive: Receive = {
+  //    case Terminated(child) => {
+  //      log.info("Child $child killed")
+  //      ...
+  //    }
+  //    case _ => println("Parent received an unknown message")
+  //  }
 
 }
 

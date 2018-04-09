@@ -1,7 +1,5 @@
 package actors
 
-import akka.actor.{Actor, ActorLogging}
-
 
 // pattern for a Actor that can aggregate multiple behavior
 // https://doc.akka.io/docs/akka/2.0/scala/actors.html

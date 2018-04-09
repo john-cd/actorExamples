@@ -1,6 +1,8 @@
 # TODO
 
-- finish actors: ActorComponent, Supervisor and actor hierarchy
+- test CacheClient
+
+- finish actors
 - write tests 
 - improve log4j.properties
 
