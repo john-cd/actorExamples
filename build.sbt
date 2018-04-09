@@ -12,6 +12,10 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
 
+
+// https://mvnrepository.com/artifact/commons-codec/commons-codec
+libraryDependencies += "commons-codec" % "commons-codec" % "1.11"
+
 // PARSERS
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6"
 

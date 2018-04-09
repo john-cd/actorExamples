@@ -1,6 +1,6 @@
 # TODO
 
-- test CacheClient
+- cleanup 
 
 - finish actors
 - write tests 

@@ -1,4 +1,4 @@
-import examples.cache._
+
 
 object Main {
 
@@ -18,7 +18,8 @@ object Main {
 
   private def doWork(): Unit = {
 
-    CacheClient.run()
+    //    examples.cache.CacheClient.run()
+    examples.hash.HashClient.run()
 
   }
 }
