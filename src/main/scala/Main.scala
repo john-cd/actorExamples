@@ -15,11 +15,9 @@ object Main {
     doWork()
   }
 
-
   private def doWork(): Unit = {
-
-    //    examples.cache.CacheClient.run()
-    examples.hash.HashClient.run()
-
+    // examples.cache.CacheClient.run()
+    // examples.hash.HashClient.run()
+    examples.filewatch.WatchClient.run()
   }
 }
