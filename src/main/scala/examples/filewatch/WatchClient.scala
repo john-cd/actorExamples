@@ -19,10 +19,10 @@ object WatchClient extends LazyLogging {
     val system = ActorSystem("WatchClientSystem")
     val watch = system.actorOf(FileSystemWatchActor.props(), s"WatchActor")
 
-    implicit val timeout: Timeout = Timeout(15.seconds) // for the ? pattern
+    implicit val timeout: Timeout = Timeout(1900.seconds) // for the ? pattern
 
     logger.info(s"Register")
-    val fut = ( watch ? FileSystemWatchActor.Register(Paths.get("./src/test/resources/"), true) )
+    val fut = ask(watch, FileSystemWatchActor.Register(Paths.get("./src/test/resources/"), true))
           .mapTo[FileSystemWatchActor.Message]
 
     fut.map {
@@ -32,7 +32,7 @@ object WatchClient extends LazyLogging {
         logger.info(s">>>>>>>>>> WatchClient - Deleted $path")
       case FileSystemWatchActor.Modified(path) =>
         logger.info(s">>>>>>>>>> WatchClient - Modified $path")
-    }
+    }.failed.foreach( (ex: Throwable) => logger.error(s">>>>>>>>> error:\n$ex") )
 
     system.scheduler.scheduleOnce(1900.seconds) {
       system.terminate()
